@@ -100,12 +100,24 @@ The capitalized term "Restart" refers only to the lifecycle operation Restart Th
   - the product layer samples its timer when it receives a completion outcome (GD-CMP-03).
 - **GD-STATE-05** The initial move count of a deal is not a separate stored component. It is reproduced deterministically by GD-LIFE-02 or GD-LIFE-05.
 - **GD-STATE-06** Every domain request must produce a **transition outcome** containing:
-  - its classification (Section 10, GD-TAP-01, GD-HIST-09, GD-LIFE-01, or GD-LIFE-08);
+  - exactly one classification:
+    - New Deal: **Accepted** when successfully initialized (GD-LIFE-02); **Invalid** when the supplied identity equals the current deal identity (GD-LIFE-01).
+    - Restart: **Accepted** when successfully applied (GD-LIFE-05); **Unavailable** when Restart is not allowed, including when the status is Completed (GD-LIFE-05).
+    - Restore: **Accepted** when the candidate is restorable (GD-LIFE-07); **not restorable** when validation fails (GD-LIFE-08).
+    - Drag: **Accepted**, **Silent rejection**, or **Capacity rejection** (GD-REJ-01).
+    - Tap: **Accepted** or **No move** (GD-TAP-01).
+    - Undo: **Accepted** when successfully applied (GD-HIST-06); **Unavailable** otherwise (GD-HIST-09).
+    - Redo: **Accepted** when successfully applied (GD-HIST-07); **Unavailable** otherwise (GD-HIST-09).
   - the resulting state;
   - the ordered list of transfers applied, which may be empty;
   - for a capacity rejection only, the values M and N;
   - a completion indicator. It is true only for the transition that contains the completing transfer. In that case the outcome must also report the final domain move count, and the completing transfer must be the last transfer in the ordered list (GD-CMP-05).
 
+  These classifications do not change move counting (Section 15), timer ownership (GD-STATE-04), persistence eligibility (Section 20), or movement legality.
+  **Invalid**, **Unavailable**, **not restorable**, **Silent rejection**, **Capacity rejection**, and **No move** leave the domain state unchanged.
+  An **Accepted** Undo and an **Accepted** Redo return the resulting state and the ordered transfers defined by GD-HIST-06 and GD-HIST-07.
+  An **Accepted** Restart returns the stable state after the initial cascade (GD-LIFE-05).
+  An **Accepted** Restore returns the adopted stable In-progress state with empty history (GD-LIFE-07).
   A transition outcome must not contain an elapsed-time value.
 - **GD-STATE-07** The domain accepts these requests: New Deal, Restart, Restore, Drag, Tap, Undo, Redo.
 - **GD-STATE-08** Request contents:
@@ -302,17 +314,19 @@ The capitalized term "Restart" refers only to the lifecycle operation Restart Th
   - an accepted New Deal;
   - Restart;
   - a restorable Restore.
-- **GD-HIST-06** Undo is available only when the status is In progress and an entry exists before the cursor. Undo must:
+- **GD-HIST-06** Undo is available only when the status is In progress and an entry exists before the cursor. A successfully applied Undo is classified as **Accepted**. Accepted Undo must:
   - restore that entry's stable state before the turn, including its move count;
   - move the cursor back by one;
   - not run automatic evaluation.
-- **GD-HIST-07** Redo is available only when the status is In progress and an entry exists after the cursor. Redo must:
+
+  The Accepted outcome returns that restored stable state and the compound turn's transfers in reverse order, last transfer first.
+- **GD-HIST-07** Redo is available only when the status is In progress and an entry exists after the cursor. A successfully applied Redo is classified as **Accepted**. Accepted Redo must:
   - restore that entry's stable state after the turn, including its move count, which is equivalent to reapplying the deliberate transfer and then running automatic evaluation (GD-AUTO-10);
   - move the cursor forward by one.
 
-  The outcome reports the same ordered transfers as the original turn.
+  The Accepted outcome returns that stable state and the same ordered transfers as the original turn.
 - **GD-HIST-08** Undo and Redo provide no elapsed-time value. The product layer must not rewind elapsed active-play time because of Undo or Redo.
-- **GD-HIST-09** An Undo or Redo request that is unavailable must be classified as **Unavailable** and must leave the state unchanged.
+- **GD-HIST-09** An Undo or Redo request that cannot be applied, including when the status is Completed or no corresponding history entry exists, must be classified as **Unavailable** and must leave the state unchanged.
 - **GD-HIST-10** History is unlimited within the in-memory session (product UNDO-01) and must not be eligible for persistence (product UNDO-03, PERS-04).
 - **GD-HIST-11** Every state that Undo restores is a stable state recorded before a compound turn (GD-INV-11). Suppressing automatic evaluation after Undo therefore never leaves a safe card unmoved.
 
@@ -327,7 +341,7 @@ The capitalized term "Restart" refers only to the lifecycle operation Restart Th
   - **A matching identity is Invalid.** A New Deal request whose identity equals the current deal identity must be classified as **Invalid**. An Invalid outcome leaves the state unchanged, runs no automatic evaluation, and changes neither the move count nor the history.
   - **No other identity is compared.** The domain compares the supplied identity only with the current deal identity. It must not track, store, or check identities of older, non-current deals, and such an identity may be reused.
   - **The product layer authorizes replacement.** Authorization to replace an unfinished game belongs to the product layer. Before requesting replacement of an unfinished deal, the product layer must satisfy its confirmation and loss-finalization requirements (product NAV-05, NAV-10, LIFE-05, LIFE-09).
-- **GD-LIFE-02** An accepted New Deal must:
+- **GD-LIFE-02** A New Deal that is successfully initialized is classified as **Accepted**. An Accepted New Deal must:
   1. adopt the supplied deal identity and shuffle-function version;
   2. produce the initial layout (GD-DEAL-06);
   3. set the move count to 0;
@@ -341,28 +355,30 @@ The capitalized term "Restart" refers only to the lifecycle operation Restart Th
 
 ### 17.2 Restart
 
-- **GD-LIFE-05** Restart is available only while the status is In progress. Restart must:
+- **GD-LIFE-05** Restart is available only while the status is In progress. A Restart that is successfully applied is classified as **Accepted**. Accepted Restart must:
   1. reproduce the initial layout from the current deal identity and its shuffle-function version;
   2. set the move count to 0;
   3. clear the history;
   4. run automatic evaluation.
 
-  The product layer must reset elapsed active-play time to zero (product LIFE-11). The resulting board and move count must equal those produced by GD-LIFE-02 for the same identity and version (product LIFE-10, LIFE-11, LIFE-13).
+  The Accepted outcome returns the stable state after that initial cascade, including the cascade's ordered transfers. The product layer must reset elapsed active-play time to zero (product LIFE-11). The resulting board and move count must equal those produced by GD-LIFE-02 for the same identity and version (product LIFE-10, LIFE-11, LIFE-13). A Restart request is classified as **Unavailable** when Restart is not allowed, including when the status is Completed and when no In-progress state exists. An Unavailable Restart leaves the state unchanged.
 - **GD-LIFE-06** Restart must not complete, finalize, or record a result (product LIFE-04). Restart cannot complete a deal: it replays the same initial cascade, and an initial cascade that completes the deal leaves the status Completed, where Restart is unavailable.
 
 ### 17.3 Restore
 
-- **GD-LIFE-07** Restore accepts a candidate state consisting of a deal identity with its shuffle-function version, a board, and a move count. When the candidate is restorable, Restore must:
+- **GD-LIFE-07** Restore accepts a candidate state consisting of a deal identity with its shuffle-function version, a board, and a move count. When the candidate is restorable, Restore is classified as **Accepted** and must:
   - adopt the candidate's deal identity, board, and move count;
   - set the status to In progress;
   - set the history to empty;
   - not run automatic evaluation.
+
+  The Accepted outcome returns that adopted stable In-progress state with empty history.
 - **GD-LIFE-08** A candidate is restorable only when all of the following hold:
   - it satisfies every invariant in Section 19, including that no exposed card is safe (GD-INV-06);
   - it is not complete;
   - its deal identity can be reproduced under its shuffle-function version, so that Restart remains possible.
 
-  Any other candidate must be classified as **not restorable**, and the state must not change. The player-facing recovery behavior for a candidate that is not restorable is owned by the product layer under product PERS-07.
+  When validation fails, the candidate must be classified as **not restorable**, and the state must not change. The player-facing recovery behavior for a candidate that is not restorable is owned by the product layer under product PERS-07.
 
 ### 17.4 Lifecycle summary
 

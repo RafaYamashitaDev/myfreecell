@@ -261,11 +261,11 @@ The Statistics screen must show:
 
 - **STAT-01** Victories: the number of finalized victories.
 - **STAT-02** Losses: the number of finalized losses.
-- **STAT-03** Success Rate: victories divided by the total of victories and losses, shown as a percentage.
-- **STAT-04** Best Time: the shortest final time among victories.
-- **STAT-05** Average Time: the mean final time across victories.
+- **STAT-03** Success Rate: victories divided by finalized results, multiplied by 100, and rounded half up to the nearest whole percentage. Finalized results are the total of victories and losses. One victory from three finalized results displays 33%. Two victories from three finalized results displays 67%.
+- **STAT-04** Best Time: the shortest final active-play time among victories. Best Time, Average Time, and the final time on the victory result must be displayed as m:ss when the displayed duration is below one hour, and as h:mm:ss when it is one hour or more. Seconds always use two digits. Minutes use two digits when displayed after an hour. A displayed duration is that time rounded half up to the nearest whole second. This display rounding does not change the recorded final times used by STAT-05.
+- **STAT-05** Average Time: the arithmetic mean of the recorded final active-play times from victories, rounded half up to the nearest whole second, then displayed in the STAT-04 time format.
 - **STAT-06** Fewest Moves: the lowest final move count among victories.
-- **STAT-07** Average Moves: the mean final move count across victories.
+- **STAT-07** Average Moves: the arithmetic mean of final move counts from victories, rounded half up to one decimal place and displayed to one decimal place. Victorious move counts of 100 and 101 produce Average Moves 100.5.
 
 ### 13.2 Statistics rules
 
@@ -273,7 +273,7 @@ The Statistics screen must show:
 - **STAT-09** Time and move statistics must use victories only.
 - **STAT-10** Victories and Losses must show their counts, including zero.
 - **STAT-11** A statistic that cannot be calculated must show an em dash (—) instead of a misleading zero. Success Rate shows an em dash when there are no finalized results. Best Time, Average Time, Fewest Moves, and Average Moves show an em dash when there are no victories.
-- **STAT-12** Time and percentage formatting must be consistent across the Statistics screen and the victory result.
+- **STAT-12** Time formatting must be consistent between the Statistics screen and the victory result: Best Time, Average Time, and the final time on the victory result must use the STAT-04 time format. Percentage formatting must follow STAT-03. The victory result is not required to display Success Rate.
 
 ### 13.3 Reset Statistics
 
@@ -394,13 +394,13 @@ Version one is accepted when all of the following can be shown on Android:
 - **AC-06** Restart, then Start New Game, then confirming records exactly one loss and creates a newly generated deal with a new deal identity.
 - **AC-07** Backgrounding the application pauses the timer. Returning resumes it. No result is recorded.
 - **AC-08** Opening Settings from a game pauses the timer. Returning resumes the same game.
-- **AC-09** Expanding the toolbar, opening the Restart choice, or opening the new-game loss confirmation does not pause the timer. The timer and move count stay visible when the toolbar is collapsed.
+- **AC-09** Expanding or collapsing the toolbar does not pause the timer. Opening the Restart choice does not pause the timer. Opening the new-game loss confirmation does not pause the timer. With the toolbar collapsed, the timer remains visible only when Show Time is enabled, and the move count remains visible only when Show Moves is enabled.
 - **AC-10** With Show Time and Show Moves off, time and moves keep accumulating. Turning them on shows the current values.
 - **AC-11** Dragging single cards and valid sequences, tapping cards, and automatic foundation moves all animate. Safe cards move to the foundations without player action. Input is disabled while a cascade runs.
 - **AC-12** A deal completed after using Undo records exactly one victory.
 - **AC-13** Completing a deal shows the victory result, after the final animations, with congratulations, final time, final moves, New Game, Statistics, and the static banner. The banner does nothing when tapped and opens no external destination.
 - **AC-14** After victory, Android Back reaches the initial screen without Continue Game, and the completed deal cannot be reopened. New Game from the victory result creates a newly generated deal with a new deal identity.
-- **AC-15** Statistics show em dashes for values that are not available yet, and correct values after victories and losses.
+- **AC-15** Statistics show an em dash for every value that cannot be calculated yet. After victories and losses, Success Rate is victories divided by finalized results, multiplied by 100 and rounded half up to a whole percentage, so 1 of 3 displays 33% and 2 of 3 displays 67%. Average Time is the mean of the recorded final active-play times from victories, rounded half up to the nearest whole second. Average Moves is the mean of final move counts from victories, rounded half up to one decimal place, so move counts 100 and 101 display 100.5. Best Time, Average Time, and the final time on the victory result use m:ss below one hour and h:mm:ss at one hour or more, with seconds always in two digits and minutes in two digits after an hour. The victory result does not have to show Success Rate.
 - **AC-16** Reset Statistics requires confirmation, clears statistics, and leaves the unfinished game and settings intact.
 - **AC-17** On first launch, Sound, Show Time, and Show Moves are on and the background is Green. Each settings change applies immediately and persists after the application restarts.
 - **AC-18** No screen requests an account, sign-in, name, or personal data. No screen shows advertising or promotional external links.
