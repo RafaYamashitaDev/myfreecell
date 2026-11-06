@@ -12,8 +12,8 @@ MyFreecell is a standalone FreeCell solitaire game for mobile devices.
 
 ## Status
 
-The project is in the product-documentation phase. Product and gameplay
-requirements are being documented first.
+The [product specification](docs/product/product-spec.md) and the [gameplay/domain specification](docs/gameplay/gameplay-domain-spec.md) are approved.
 
-Architecture and implementation have not started, and no implementation
-technology has been selected.
+[ADR-01](docs/architecture/adr-01-framework-and-platform-targets.md) through [ADR-04](docs/architecture/adr-04-dependency-admission-policy.md) are accepted. They are recorded in [`docs/architecture/`](docs/architecture/).
+
+Application scaffolding and implementation have not started. Remaining architecture decisions are deferred to their appropriate approval points.
