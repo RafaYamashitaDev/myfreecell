@@ -12,8 +12,10 @@ MyFreecell is a standalone FreeCell solitaire game for mobile devices.
 
 ## Status
 
-The [product specification](docs/product/product-spec.md) and the [gameplay/domain specification](docs/gameplay/gameplay-domain-spec.md) are approved.
+The [product specification](docs/product/product-spec.md) and the [gameplay/domain specification](docs/gameplay/gameplay-domain-spec.md) remain approved.
 
-[ADR-01](docs/architecture/adr-01-framework-and-platform-targets.md) through [ADR-04](docs/architecture/adr-04-dependency-admission-policy.md) are accepted. They are recorded in [`docs/architecture/`](docs/architecture/).
+[ADR-01](docs/architecture/adr-01-framework-and-platform-targets.md) through [ADR-04](docs/architecture/adr-04-dependency-admission-policy.md) remain accepted. They are recorded in [`docs/architecture/`](docs/architecture/).
 
-Application scaffolding and implementation have not started. Remaining architecture decisions are deferred to their appropriate approval points.
+The Android-only Flutter scaffold now exists. It was generated with Flutter 3.47.9 stable, framework revision `c197ca5199e9ee5661e865596c9c07294dfab51c`, and bundled Dart 3.13.7. The private pure-Dart domain package exists at `packages/myfreecell_domain`.
+
+Product implementation has not started. The generated counter application is temporary scaffold verification code, not MyFreecell product implementation. Landscape orientation enforcement has not yet been configured. Remaining deferred architecture decisions remain deferred.
