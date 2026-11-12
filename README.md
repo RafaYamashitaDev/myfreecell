@@ -18,4 +18,4 @@ The [product specification](docs/product/product-spec.md) and the [gameplay/doma
 
 The Android-only Flutter scaffold now exists. It was generated with Flutter 3.47.9 stable, framework revision `c197ca5199e9ee5661e865596c9c07294dfab51c`, and bundled Dart 3.13.7. The private pure-Dart domain package exists at `packages/myfreecell_domain`.
 
-Product implementation has not started. The generated counter application is temporary scaffold verification code, not MyFreecell product implementation. Landscape orientation enforcement has not yet been configured. Remaining deferred architecture decisions remain deferred.
+Product implementation has not started. The generated counter application is temporary scaffold verification code, not MyFreecell product implementation. Landscape launch is configured for both directions with Android userLandscape and Flutter's pre-frame request; Android 16 and later may ignore that restriction on some large-screen, foldable, desktop-mode, and multi-window displays, which is not yet verified. Remaining deferred architecture decisions remain deferred.
