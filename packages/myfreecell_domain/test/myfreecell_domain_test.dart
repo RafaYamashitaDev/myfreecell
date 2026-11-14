@@ -1,16 +1,14 @@
-import 'package:myfreecell_domain/myfreecell_domain.dart';
+import 'dart:isolate';
+
+import 'package:myfreecell_domain/myfreecell_domain.dart'; // ignore: unused_import
 import 'package:test/test.dart';
 
 void main() {
-  group('A group of tests', () {
-    final awesome = Awesome();
+  test('public library resolves', () async {
+    final uri = await Isolate.resolvePackageUri(
+      Uri.parse('package:myfreecell_domain/myfreecell_domain.dart'),
+    );
 
-    setUp(() {
-      // Additional setup goes here.
-    });
-
-    test('First Test', () {
-      expect(awesome.isAwesome, isTrue);
-    });
+    expect(uri, isNotNull);
   });
 }

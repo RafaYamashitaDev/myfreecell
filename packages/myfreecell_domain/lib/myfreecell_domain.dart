@@ -1,8 +1,4 @@
-/// Support for doing something awesome.
+/// Public entry point for the private MyFreecell domain package.
 ///
-/// More dartdocs go here.
+/// This library currently exposes no public domain API.
 library;
-
-export 'src/myfreecell_domain_base.dart';
-
-// TODO: Export any libraries intended for clients of this package.

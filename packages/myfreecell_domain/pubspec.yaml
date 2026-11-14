@@ -1,8 +1,7 @@
 name: myfreecell_domain
-description: A starting point for Dart libraries or applications.
+description: The private pure-Dart domain package for MyFreecell.
 publish_to: none
 version: 1.0.0
-# repository: https://github.com/my_org/my_repo
 
 environment:
   sdk: ^3.13.7
