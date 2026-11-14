@@ -14,7 +14,7 @@ MyFreecell is a standalone FreeCell solitaire game for mobile devices.
 
 The [product specification](docs/product/product-spec.md) and the [gameplay/domain specification](docs/gameplay/gameplay-domain-spec.md) remain approved.
 
-[ADR-01](docs/architecture/adr-01-framework-and-platform-targets.md) through [ADR-05](docs/architecture/adr-05-deterministic-deal-generation.md) remain accepted. They are recorded in [`docs/architecture/`](docs/architecture/).
+[ADR-01](docs/architecture/adr-01-framework-and-platform-targets.md) through [ADR-05](docs/architecture/adr-05-deterministic-deal-generation.md) remain accepted, and [ADR-11](docs/architecture/adr-11-testing-boundaries-and-verification-gates.md) is now also accepted. They are recorded in [`docs/architecture/`](docs/architecture/).
 
 The Android-only Flutter scaffold now exists. It was generated with Flutter 3.47.9 stable, framework revision `c197ca5199e9ee5661e865596c9c07294dfab51c`, and bundled Dart 3.13.7. The private pure-Dart domain package exists at `packages/myfreecell_domain`.
 
