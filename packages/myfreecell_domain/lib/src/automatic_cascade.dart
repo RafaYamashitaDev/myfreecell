@@ -111,6 +111,17 @@ AutomaticCascadeResult automaticFoundationCascade(Board board) {
   return AutomaticCascadeResult(board: current, transfers: transfers);
 }
 
+/// Whether [board] has no safe exposed card (GD-INV-06, GD-TERM-13, ADR-14).
+///
+/// The result is board-level only. It uses the same scan and safety rule as
+/// [automaticFoundationCascade]: free cells 0 through 3, then tableau columns
+/// 0 through 7. It does not run the cascade, and it does not modify [board].
+/// A complete board is stable because it exposes no card.
+///
+/// It says nothing about move count, whether a transition is in progress, or
+/// a complete game state.
+bool isStableBoard(Board board) => _nextAutomaticTransfer(board) == null;
+
 AutomaticTransfer? _nextAutomaticTransfer(Board board) {
   for (var index = 0; index < 4; index++) {
     final position = FreeCellPosition(index);

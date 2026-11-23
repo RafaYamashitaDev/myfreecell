@@ -198,6 +198,24 @@ void _expectStable(Board board) {
   }
 }
 
+/// Boolean form of [_expectStable]. It does not call the cascade or
+/// production safety.
+bool _oracleStable(Board board) {
+  for (var index = 0; index < board.freeCells.length; index++) {
+    final card = board.freeCells[index];
+    if (card != null && _safe(card, board.foundationLevels)) {
+      return false;
+    }
+  }
+  for (var index = 0; index < board.columns.length; index++) {
+    final column = board.columns[index];
+    if (column.isNotEmpty && _safe(column.last, board.foundationLevels)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 void _expectConserved(Board board) {
   final seen = <Card>[
     ..._impliedCards(board.foundationLevels),
@@ -1221,6 +1239,235 @@ void main() {
         } else {
           expect(total, lessThan(52));
         }
+      }
+    });
+  });
+
+  group('isStableBoard (GD-INV-06, GD-TERM-13)', () {
+    Map<String, Board> handBuilt() => {
+      'buried king': _buriedKing(),
+      'complete': _board(levels: _levels(13, 13, 13, 13)),
+      'free-cell ace': _board(
+        freeCells: const [null, _aceOfHearts, null, null],
+        columns: const [
+          [_kingOfClubs],
+        ],
+      ),
+      'tableau ace': _board(
+        columns: const [
+          [_kingOfClubs],
+          [],
+          [],
+          [],
+          [],
+          [_aceOfDiamonds],
+        ],
+      ),
+      'unsafe two, own suit': _board(
+        freeCells: const [_twoOfClubs, null, null, null],
+        columns: const [
+          [_kingOfClubs],
+        ],
+      ),
+      'unsafe two, other foundation': _board(
+        freeCells: const [_twoOfClubs, null, null, null],
+        levels: _levels(1, 0, 0, 0),
+        columns: const [
+          [_kingOfClubs],
+        ],
+      ),
+      'buried ace': _board(
+        columns: const [
+          [_aceOfClubs, _kingOfClubs],
+        ],
+      ),
+      'free-cell two': _board(
+        freeCells: const [_twoOfClubs, null, null, null],
+        levels: _levels(1, 1, 1, 1),
+        columns: const [
+          [_kingOfClubs],
+        ],
+      ),
+      'E15 stable portion': _board(
+        levels: _levels(13, 13, 11, 12),
+        columns: const [
+          [],
+          [_queenOfSpades, _kingOfDiamonds],
+          [],
+          [],
+          [_kingOfSpades],
+        ],
+      ),
+      'four free-cell aces': _board(
+        freeCells: const [
+          _aceOfDiamonds,
+          _aceOfClubs,
+          _aceOfSpades,
+          _aceOfHearts,
+        ],
+        columns: const [
+          [_kingOfClubs],
+        ],
+      ),
+    };
+
+    List<Board> dealtBoards() => [
+      for (final value in _dealtIdentities)
+        dealtBoard(DealIdentity(value), ShuffleVersion.v1),
+    ];
+
+    void expectOracleAgrees(Board board, String reason) {
+      final stable = isStableBoard(board);
+      expect(stable, _oracleStable(board), reason: reason);
+      // [_expectStable] asserts the same rule and cannot return a boolean.
+      // It is available only when the board is stable.
+      if (stable) {
+        _expectStable(board);
+      }
+    }
+
+    test('a stable incomplete board returns true', () {
+      final board = _buriedKing();
+
+      expect(isStableBoard(board), isTrue);
+      _expectStable(board);
+    });
+
+    test('a complete board returns true', () {
+      final board = _board(levels: _levels(13, 13, 13, 13));
+
+      expect(isStableBoard(board), isTrue);
+      _expectStable(board);
+    });
+
+    test('an eligible exposed free-cell card returns false', () {
+      final board = _board(
+        freeCells: const [null, _aceOfHearts, null, null],
+        columns: const [
+          [_kingOfClubs],
+        ],
+      );
+
+      expect(board.freeCells[1], _aceOfHearts);
+      expect(_safe(_aceOfHearts, board.foundationLevels), isTrue);
+      expect(isStableBoard(board), isFalse);
+      expect(_oracleStable(board), isFalse);
+    });
+
+    test('an eligible exposed tableau card returns false', () {
+      final board = _board(
+        columns: const [
+          [_kingOfClubs],
+          [],
+          [],
+          [],
+          [],
+          [_aceOfDiamonds],
+        ],
+      );
+
+      expect(board.columns[5].last, _aceOfDiamonds);
+      expect(_safe(_aceOfDiamonds, board.foundationLevels), isTrue);
+      expect(isStableBoard(board), isFalse);
+      expect(_oracleStable(board), isFalse);
+    });
+
+    test('an exposed but unsafe card remains stable', () {
+      final ownSuit = _board(
+        freeCells: const [_twoOfClubs, null, null, null],
+        columns: const [
+          [_kingOfClubs],
+        ],
+      );
+      expect(ownSuit.freeCells.first, _twoOfClubs);
+      expect(_safe(_twoOfClubs, ownSuit.foundationLevels), isFalse);
+      expect(isStableBoard(ownSuit), isTrue);
+      _expectStable(ownSuit);
+
+      final otherFoundation = _board(
+        freeCells: const [_twoOfClubs, null, null, null],
+        levels: _levels(1, 0, 0, 0),
+        columns: const [
+          [_kingOfClubs],
+        ],
+      );
+      expect(otherFoundation.freeCells.first, _twoOfClubs);
+      expect(_safe(_twoOfClubs, otherFoundation.foundationLevels), isFalse);
+      expect(isStableBoard(otherFoundation), isTrue);
+      _expectStable(otherFoundation);
+    });
+
+    test('a safe card buried under another card remains stable', () {
+      final board = _board(
+        columns: const [
+          [_aceOfClubs, _kingOfClubs],
+        ],
+      );
+      final column = board.columns.first;
+
+      expect(column.last, _kingOfClubs);
+      expect(column[column.length - 2], _aceOfClubs);
+      expect(_safe(_aceOfClubs, board.foundationLevels), isTrue);
+      expect(_safe(_kingOfClubs, board.foundationLevels), isFalse);
+      expect(isStableBoard(board), isTrue);
+      _expectStable(board);
+    });
+
+    test('agrees with whether the cascade has no transfers', () {
+      for (final entry in handBuilt().entries) {
+        expect(
+          isStableBoard(entry.value),
+          automaticFoundationCascade(entry.value).transfers.isEmpty,
+          reason: entry.key,
+        );
+      }
+      for (final value in _dealtIdentities) {
+        final board = dealtBoard(DealIdentity(value), ShuffleVersion.v1);
+        expect(
+          isStableBoard(board),
+          automaticFoundationCascade(board).transfers.isEmpty,
+          reason: '$value',
+        );
+      }
+    });
+
+    test('agrees with the test-local stability oracle', () {
+      for (final entry in handBuilt().entries) {
+        expectOracleAgrees(entry.value, entry.key);
+      }
+      for (final value in _dealtIdentities) {
+        expectOracleAgrees(
+          dealtBoard(DealIdentity(value), ShuffleVersion.v1),
+          '$value',
+        );
+      }
+    });
+
+    test('post-cascade boards for the normative identities are stable', () {
+      for (final value in _dealtIdentities) {
+        final board = automaticFoundationCascade(
+          dealtBoard(DealIdentity(value), ShuffleVersion.v1),
+        ).board;
+
+        expect(isStableBoard(board), isTrue, reason: '$value');
+        _expectStable(board);
+        expect(_oracleStable(board), isTrue, reason: '$value');
+      }
+    });
+
+    test('does not modify its input', () {
+      final boards = [
+        ...handBuilt().values,
+        ...dealtBoards(),
+        for (final value in _dealtIdentities)
+          automaticFoundationCascade(
+            dealtBoard(DealIdentity(value), ShuffleVersion.v1),
+          ).board,
+      ];
+      for (final board in boards) {
+        final untouched = _watch(board);
+        isStableBoard(board);
+        untouched();
       }
     });
   });
